@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
  */
 public class InputHandler
 {
+
     private InputHandler(){}
 
     private static final int LIMIT = 10;
