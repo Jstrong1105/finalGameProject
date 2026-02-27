@@ -42,6 +42,7 @@ class Cell
     boolean isFlagged() { return status == CellStatus.FLAGGED; }
     boolean isClosed() { return status == CellStatus.CLOSED; }
     boolean isMine() { return isMine; }
+    boolean isChoice() { return choice; }
     int getAdjacentMines() { return adjacentMines; }
 
     // setter
@@ -49,28 +50,24 @@ class Cell
     {
         // 닫혀 있는 셀만 열 수 있다
         // 열려있거나 깃발인 칸은 열리지 않는다.
-        if(isClosed() && choice)
+        if(isClosed())
         {
             status = CellStatus.OPEN;
         }
-
-        choice = false;
     }
 
     void flagToggle()
     {
         // 닫혀 있다면 깃발로
-        if(isClosed() && choice)
+        if(isClosed())
         {
             status = CellStatus.FLAGGED;
         }
         // 깃발이라면 닫힌 셀로
-        else if(isFlagged() && choice)
+        else if(isFlagged())
         {
             status = CellStatus.CLOSED;
         }
-
-        choice = false;
     }
 
     void setMine(boolean isMine)

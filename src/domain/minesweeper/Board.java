@@ -16,6 +16,9 @@ class Board
     // 보드판
     private Cell[][] board;
 
+    // 프린터
+    private final MinesweeperPrinter printer;
+
     // 보드판 가로 세로 사이즈
     private final int SIZE;
     private final int TOTAL_CELL;
@@ -28,7 +31,7 @@ class Board
     private int openCellCount;
 
     // 생성자
-    Board(int size, int mineCount)
+    Board(int size, int mineCount, MinesweeperPrinter printer)
     {
         SIZE = size;
         TOTAL_CELL = SIZE*SIZE;
@@ -36,6 +39,7 @@ class Board
 
         openCellCount = 0;
 
+        this.printer = printer;
         boardReset();
     }
 
@@ -95,6 +99,24 @@ class Board
 
         // 지뢰의 위치는 사용자가 한번의 입력을 해야지만 확정된다.
         // 따라서 사용자가 한번의 입력을 하고 난 후에 인접 지뢰의 수를 계산한다.
+
+        /*
+        IntStream.range(0,SIZE*SIZE)
+                .filter(num->board[num/SIZE][num%SIZE].isMine())
+                .forEach(num->
+                {
+                    int nCol = num / SIZE;
+                    int nRow = num % SIZE;
+
+                    setAdjacentMines(nCol,nRow);
+                });
+         */
+    }
+
+    // 출력하기
+    void printBoard()
+    {
+        printer.print(board);
     }
 
     // 좌표가 보드판 범위를 벗어났는지 확인하는 메소드
@@ -104,7 +126,7 @@ class Board
     }
 
     // 보드판의 범위를 벗어난 값을 입력해 에러를 던지는 래퍼 메소드
-    private void arrayOutException(int col, int row)
+    private void arrayOutCheck(int col, int row)
     {
         if(isOutOfArray(col,row))
         {
@@ -112,10 +134,36 @@ class Board
         }
     }
 
+    // 선택한 셀인지 확인하기
+    boolean isChoice(int col,int row)
+    {
+        return board[col][row].isChoice();
+    }
+
+    // 한칸 선택하기
+    void choiceCell(int col, int row)
+    {
+        arrayOutCheck(col,row);
+
+        // 이미 열린 셀은 선택할 수 없다.
+        if(!board[col][row].isOpen())
+        {
+            board[col][row].setChoice(true);
+        }
+    }
+
+    // 선택 취소하기
+    void cancelCell(int col, int row)
+    {
+        arrayOutCheck(col,row);
+
+        board[col][row].setChoice(false);
+    }
+
     // 깃발 체크
     void toggleFlag(int col, int row)
     {
-        arrayOutException(col,row);
+        arrayOutCheck(col,row);
 
         board[col][row].flagToggle();
     }
@@ -123,7 +171,7 @@ class Board
     // 첫 입력 체크
     void firstInput(int col, int row)
     {
-        arrayOutException(col,row);
+        arrayOutCheck(col,row);
 
         // 처음 입력한 값이 지뢰라면 다른 곳으로 지뢰를 옮긴다.
         if(board[col][row].isMine())
@@ -174,15 +222,23 @@ class Board
     // 한칸 열림 여부 확인하기
     boolean isOpen(int col, int row)
     {
-        arrayOutException(col,row);
+        arrayOutCheck(col,row);
 
         return board[col][row].isOpen();
+    }
+
+    // 한칸 깃발 여부 확인하기
+    boolean isFlag(int col, int row)
+    {
+        arrayOutCheck(col,row);
+
+        return board[col][row].isFlagged();
     }
 
     // 한칸 폭탄 여부 확인하기
     boolean isMine(int col, int row)
     {
-        arrayOutException(col,row);
+        arrayOutCheck(col,row);
 
         return board[col][row].isMine();
     }
@@ -190,21 +246,19 @@ class Board
     // 한칸 열기
     void openCell(int col, int row)
     {
-        arrayOutException(col,row);
+        arrayOutCheck(col,row);
 
         Cell cell = board[col][row];
 
-        if(!cell.isClosed())
+        if(cell.isClosed())
         {
-            return;
-        }
+            cell.openCell();
+            openCellCount++;
 
-        cell.openCell();
-        openCellCount++;
-
-        if(cell.getAdjacentMines() == 0)
-        {
-            openAdjacentCell(col,row);
+            if(cell.getAdjacentMines() == 0)
+            {
+                openAdjacentCell(col,row);
+            }
         }
     }
 

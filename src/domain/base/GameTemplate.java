@@ -45,11 +45,11 @@ public abstract class GameTemplate implements GameApp
     }
 
     // 초기화
-    abstract void initialize();
+    protected abstract void initialize();
     // 화면 출력
-    abstract void render();
+    protected abstract void render();
     // 사용자 입력
-    abstract void inputHandle();
+    protected abstract void inputHandle();
     // 게임 상태 갱신
-    abstract  void update();
+    protected abstract  void update();
 }
