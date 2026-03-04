@@ -1,120 +1,69 @@
 package domain.minesweeper;
 
+import utility.InputUtils;
+
 /**
- * 지뢰찾기 프린터 1
+ * 지뢰찾기 프린터 1 모양으로 출력한다.
  */
 class MinesweeperPrinter1 implements MinesweeperPrinter
 {
+    @Override
+    public int inputNumber(int size)
+    {
+        int col = InputUtils.readInt("행(R)",1,size);
+        int row = InputUtils.readInt("열(C)",1,size);
+
+        return (col-1) * size + row-1;
+    }
 
     @Override
-    public void print(Cell[][] board)
+    public void endMsgPrint(int col, int row, int size)
+    {
+        System.out.printf("%d행 %d열은 폭탄입니다.\n",(col+1),(row+1));
+    }
+
+    @Override
+    public void boardPrint(Cell[][] board)
     {
         int size = board.length;
 
-        System.out.print("==".repeat(size));
-        System.out.print(" 지뢰찾기 ");
-        System.out.println("==".repeat(size));
-        System.out.println("====".repeat(size) + "==========");
+        System.out.print(" ".repeat(6));
+        for(int i = 1; i <= size; i++) {System.out.printf("%2d ",i);}
+        System.out.println("C");
 
-        System.out.print("    ");
-
-        System.out.print(" ".repeat(size/2));
-
-        for(int i = 0; i < size; i++)
-        {
-            System.out.printf("%2d ",(i+1));
-        }
-
-        System.out.println();
-
-        System.out.print(" ".repeat(size/2));
-
-        System.out.print("   ┌");
-
-        for(int i = 0; i < size*3; i++)
-        {
-            System.out.printf("%s","─");
-        }
-
-        System.out.print("─┐");
-
-        System.out.println();
+        System.out.print(" ".repeat(5));
+        System.out.print("┌");
+        System.out.print("─".repeat(size*3));
+        System.out.println("┐");
 
         for(int i = 0; i < size; i++)
         {
-            System.out.print(" ".repeat(size/2));
-            System.out.printf("%2d | ",(i+1));
+            System.out.printf("%2d R │",(i+1));
 
             for(int j = 0; j < size; j++)
             {
-                System.out.printf("%3s",getShape(board[i][j]));
+                String str = getShape(board[i][j]);
+
+                if(board[i][j].isChoice())
+                {
+                    str = "\u001B[1;93;100m" + str + "\u001B[0m";
+                }
+
+                System.out.printf("%3s",str);
             }
 
-            System.out.println("| ");
+            System.out.println("│");
         }
 
-        System.out.print(" ".repeat(size/2));
-
-        System.out.print("   └");
-
-        for(int i = 0; i < size*3; i++)
-        {
-            System.out.printf("%s","─");
-        }
-
-        System.out.print("─┘");
-
-        System.out.println();
+        System.out.print(" ".repeat(5));
+        System.out.print("└");
+        System.out.print("─".repeat(size*3));
+        System.out.println("┘");
     }
 
-    private static final String[] OPEN_SHAPE = {" □ ","\u001B[92m ① \u001B[0m"
-            ,"\u001B[94m ② \u001B[0m","\u001B[91m ③ \u001B[0m","\u001B[91m ④ \u001B[0m"
-            ,"\u001B[91m ⑤ \u001B[0m","\u001B[91m ⑥ \u001B[0m","\u001B[91m ⑦ \u001B[0m"
-            ,"\u001B[91m ⑧ \u001B[0m"};
-
-    private static final String CLOSE_SHAPE = " ■ ";
-    private static final String FLAG_SHAPE = " P ";
-    private static final String MINE_SHAPE = " ※ ";
-
-    private String getShape(Cell cell)
+    @Override
+    public String closeShape(Cell cell)
     {
-        // 열린 상태라면
-        if(cell.isOpen())
-        {
-            // 지뢰라면
-            if(cell.isMine())
-            {
-                return MINE_SHAPE;
-            }
-            else
-            {
-                return OPEN_SHAPE[cell.getAdjacentMines()];
-            }
-        }
-
-        // 열리진 않았고
-        else
-        {
-            String shape = "";
-
-            // 닫힌 상태라면
-            if(cell.isClosed())
-            {
-                shape += CLOSE_SHAPE;
-            }
-
-            // 깃발 상태라면
-            else if(cell.isFlagged())
-            {
-                shape += FLAG_SHAPE;
-            }
-
-            if(cell.isChoice())
-            {
-                shape = String.format("\u001B[100;93m%s\u001B[0m",shape);
-            }
-
-            return shape;
-        }
+        return " ■ ";
     }
 }

@@ -6,8 +6,8 @@ package domain.minesweeper;
 class MinesweeperOption
 {
     // 크기
-    private final int MIN_SIZE = 10;
-    private final int MAX_SIZE = 20;
+    private static final int MIN_SIZE = 10;
+    private static final int MAX_SIZE = 20;
     private int size = MIN_SIZE;
 
     int getMinSize() { return MIN_SIZE; }
@@ -15,8 +15,8 @@ class MinesweeperOption
     int getSize() { return size; }
 
     // 난이도
-    private final int MIN_LEVEL = 1;
-    private final int MAX_LEVEL = 3;
+    private static final int MIN_LEVEL = 1;
+    private static final int MAX_LEVEL = 3;
     private int level = MIN_LEVEL;
 
     int getMinLevel() { return MIN_LEVEL; }
@@ -24,11 +24,10 @@ class MinesweeperOption
     int getLevel() { return level; }
 
     // 출력 타입
-    private MinesweeperPrinter printer;
+    private MinesweeperPrinter printer = new MinesweeperPrinter1();
 
     MinesweeperPrinter getPrinter() { return printer; }
 
-    //
     void setSize(int size)
     {
         if(size < MIN_SIZE || size > MAX_SIZE)

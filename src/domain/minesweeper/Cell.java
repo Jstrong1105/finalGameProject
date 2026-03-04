@@ -2,7 +2,6 @@ package domain.minesweeper;
 
 /**
  * 지뢰찾기 한칸을 나타내는 객체
- * 패키지 프라이빗
  */
 class Cell
 {
@@ -90,9 +89,8 @@ class Cell
     }
 
     // 특별한 상황에서 실행되는 메소드
-
-    // 게임이 종료되었을때
-    // 모든 칸을 열기 위해서 존재하는 메소드
+    // 현재 상태와 상관없이 무조건 오픈하는 메소드
+    // 게임이 종료되었거나 하는 상황에서 실행됨
     void openAll()
     {
         status = CellStatus.OPEN;

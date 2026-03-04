@@ -3,6 +3,7 @@ package utility;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.function.Supplier;
 
 /**
  * 사용자로부터 입력을 받는 유틸리티
@@ -11,11 +12,6 @@ public final class InputUtils
 {
     // 생성자 private → 외부에서 인스턴스 생성 금지
     private InputUtils(){}
-
-    // 입력 오류 제한 횟수
-    // 해당 횟수 이상 입력 오류가 발생하면 악의적인 입력으로 판단
-    private static final int LIMIT = 10;
-    private static final String ERROR_MESSAGE = "지정된 횟수를 초과했습니다.";
 
     private static final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
@@ -26,7 +22,25 @@ public final class InputUtils
         {
             System.out.print(prompt);
             System.out.flush();
-            return br.readLine().trim();
+            String str = br.readLine();
+
+            if(str == null)
+            {
+                return "";
+            }
+
+            str = str.trim();
+
+            if(str.equalsIgnoreCase("exit"))
+            {
+                System.out.println("프로그램을 종료합니다.");
+                System.exit(0);
+                return "";
+            }
+            else
+            {
+                return str;
+            }
         }
         catch (IOException e)
         {
@@ -37,60 +51,41 @@ public final class InputUtils
     // 숫자를 입력받는 메소드
     public static int readInt(String prompt)
     {
-        int limit = LIMIT;
-
-        while (limit-- > 0)
+        while(true)
         {
             try
             {
                 return Integer.parseInt(readString(prompt));
             }
-
             catch (NumberFormatException e)
             {
                 System.out.println("숫자만 입력하세요.");
             }
         }
-
-        throw new RuntimeException(ERROR_MESSAGE);
     }
 
     // 숫자를 범위 내에서 입력받는 메소드
     public static int readInt(String prompt, int min, int max)
     {
-        int limit = LIMIT;
-
-        while (limit-- > 0)
+        while(true)
         {
-            try
-            {
-               int num = Integer.parseInt(readString(String.format("%s (%d~%d) : ",prompt,min,max)));
+            int number = readInt(String.format(prompt + " (%d~%d) : ",min,max));
 
-                if(num < min || num > max)
-                {
-                    System.out.printf("%d ~ %d 사이로 입력하세요.\n",min,max);
-                }
-                else
-                {
-                    return num;
-                }
+            if(number < min || number > max)
+            {
+                System.out.printf("%d ~ %d 사이의 값을 입력하세요.\n",min,max);
             }
-
-            catch (NumberFormatException e)
+            else
             {
-                System.out.println("숫자만 입력하세요.");
+                return number;
             }
         }
-
-        throw new RuntimeException(ERROR_MESSAGE);
     }
 
     // boolean 을 입력받는 메소드
     public static boolean readBoolean(String prompt, String y, String n)
     {
-        int limit = LIMIT;
-
-        while(limit-- > 0)
+        while(true)
         {
             String answer = readString(String.format("%s (%s/%s) : ",prompt,y,n));
 
@@ -107,7 +102,5 @@ public final class InputUtils
                 System.out.println("잘못된 입력입니다.");
             }
         }
-
-        throw new RuntimeException(ERROR_MESSAGE);
     }
 }

@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
  */
 class Board
 {
-    // 상수
+    // 주변 8칸을 탐색할때 사용할 좌표 상수
     private static final int[] DIRECTION_COL = {-1,-1,-1,0,0,1,1,1};
     private static final int[] DIRECTION_ROW = {-1,0,1,-1,1,-1,0,1};
 
@@ -19,27 +19,24 @@ class Board
     // 프린터
     private final MinesweeperPrinter printer;
 
-    // 보드판 가로 세로 사이즈
-    private final int SIZE;
-    private final int TOTAL_CELL;
+    // 보드판 가로 세로 사이즈 , 전체 개수 , 지뢰의 개수
+    private final int size, totalCell, mineCount;
 
-    // 지뢰 개수
-    private final int MINE_COUNT;
+    // 오픈한 셀의 개수
+    private int openCellCount;
 
     private static final Random RD = new Random();
-
-    private int openCellCount;
 
     // 생성자
     Board(int size, int mineCount, MinesweeperPrinter printer)
     {
-        SIZE = size;
-        TOTAL_CELL = SIZE*SIZE;
-        MINE_COUNT = mineCount;
-
+        this.size = size;
+        totalCell = this.size * this.size;
+        this.mineCount = mineCount;
+        this.printer = printer;
         openCellCount = 0;
 
-        this.printer = printer;
+        // 보드판 초기화
         boardReset();
     }
 
@@ -57,60 +54,40 @@ class Board
         // 전체를 일반셀로 만들고 지뢰로 바꿀지를 나눔으로써
         // 셔플하는 방식보다 적은 자원으로 지뢰를 배치할 수 있다.
 
-        board = new Cell[SIZE][SIZE];
+        board = new Cell[size][size];
 
         // 지뢰의 비율이 절반 이하라면 전체를 일반 셀로 채우고
         // 지뢰 개수만큼 지뢰로 만듬
-        if(TOTAL_CELL/2 > MINE_COUNT)
+        if(totalCell/2 > mineCount)
         {
-            for(int i = 0; i < SIZE; i++)
-            {
-                for(int j = 0; j < SIZE; j++)
-                {
-                    board[i][j] = new Cell(false);
-                }
-            }
-
-            // 지뢰로 만들기
-            RD.ints(0,TOTAL_CELL)
-                    .distinct()
-                    .limit(MINE_COUNT)
-                    .forEach(num->board[num/SIZE][num%SIZE].setMine(true));
+            boardReset(false,mineCount);
         }
 
         // 지뢰의 비율이 절반 초과라면 전체를 지뢰로 만들고
         // 지뢰가 아닌 개수만큼 일반 셀로 만듬
         else
         {
-            for(int i = 0; i < SIZE; i++)
-            {
-                for(int j = 0; j < SIZE; j++)
-                {
-                    board[i][j] = new Cell(true);
-                }
-            }
-
-            // 일반셀로 만들기
-            RD.ints(0,TOTAL_CELL)
-                    .distinct()
-                    .limit((TOTAL_CELL)-MINE_COUNT)
-                    .forEach(num->board[num/SIZE][num%SIZE].setMine(false));
+           boardReset(true,totalCell-mineCount);
         }
 
         // 지뢰의 위치는 사용자가 한번의 입력을 해야지만 확정된다.
         // 따라서 사용자가 한번의 입력을 하고 난 후에 인접 지뢰의 수를 계산한다.
+    }
 
-        /*
-        IntStream.range(0,SIZE*SIZE)
-                .filter(num->board[num/SIZE][num%SIZE].isMine())
-                .forEach(num->
-                {
-                    int nCol = num / SIZE;
-                    int nRow = num % SIZE;
+    private void boardReset(boolean mine,int count)
+    {
+        for(int i = 0; i < size; i++)
+        {
+            for(int j = 0; j < size; j++)
+            {
+                board[i][j] = new Cell(mine);
+            }
+        }
 
-                    setAdjacentMines(nCol,nRow);
-                });
-         */
+        RD.ints(0, totalCell)
+                .distinct()
+                .limit(count)
+                .forEach(num->board[num/ size][num% size].setMine(!mine));
     }
 
     // 출력하기
@@ -122,7 +99,7 @@ class Board
     // 좌표가 보드판 범위를 벗어났는지 확인하는 메소드
     private boolean isOutOfArray(int col, int row)
     {
-        return col < 0 || row < 0 || col >= SIZE || row >= SIZE;
+        return col < 0 || row < 0 || col >= size || row >= size;
     }
 
     // 보드판의 범위를 벗어난 값을 입력해 에러를 던지는 래퍼 메소드
@@ -132,12 +109,6 @@ class Board
         {
             throw new IllegalArgumentException("보드판의 범위를 벗어난 입력입니다.");
         }
-    }
-
-    // 선택한 셀인지 확인하기
-    boolean isChoice(int col,int row)
-    {
-        return board[col][row].isChoice();
     }
 
     // 한칸 선택하기
@@ -176,29 +147,26 @@ class Board
         // 처음 입력한 값이 지뢰라면 다른 곳으로 지뢰를 옮긴다.
         if(board[col][row].isMine())
         {
-            RD.ints(0,TOTAL_CELL)
+            RD.ints(0, totalCell)
                     .distinct()
-                    .filter(num->!board[num/SIZE][num%SIZE].isMine())
+                    .filter(num->!board[num/ size][num% size].isMine())
                     .limit(1)
                     .forEach(index->
                     {
-                        int nCol = index / SIZE;
-                        int nRow = index % SIZE;
-
                         board[col][row].setMine(false);
-                        board[nCol][nRow].setMine(true);
+                        board[index/size][index%size].setMine(true);
                     });
         }
 
         // 사용자가 한칸을 입력해야 지뢰의 위치가 확정되기때문에 이때 인접 지뢰 수를 계산한다.
 
         // 지뢰 주변 인접 지뢰 수 증가 시키기
-        IntStream.range(0,SIZE*SIZE)
-                .filter(num->board[num/SIZE][num%SIZE].isMine())
+        IntStream.range(0, size * size)
+                .filter(num->board[num/ size][num% size].isMine())
                 .forEach(num->
                 {
-                    int nCol = num / SIZE;
-                    int nRow = num % SIZE;
+                    int nCol = num / size;
+                    int nRow = num % size;
 
                     setAdjacentMines(nCol,nRow);
                 });
@@ -288,7 +256,7 @@ class Board
         // 위의 방식은 보드판 전체를 돌면서 확인하는 구조 직관적이라곤 할 수 있겠지만
         // 조금 자원 소모가 큰거 같다.
 
-        return openCellCount >= TOTAL_CELL - MINE_COUNT;
+        return openCellCount >= totalCell - mineCount;
     }
 
     // 게임이 종료되어서 모든 칸을 오픈하기

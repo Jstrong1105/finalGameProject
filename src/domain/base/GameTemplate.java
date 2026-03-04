@@ -16,8 +16,8 @@ public abstract class GameTemplate implements GameApp
     {
         do
         {
-            isRunning = true;
             initialize();
+            isRunning = true;
 
             // update 에서 내부적으로 게임이 종료되었는지 판단해서
             // endGame을 호출한다.
@@ -38,18 +38,29 @@ public abstract class GameTemplate implements GameApp
         return InputUtils.readBoolean("다시 시작하시겠습니까?","y","n");
     }
     
-    // 게임 종료 메소드
-    protected  void endGame()
+    // 게임이 종료될때 하위 클래스에서 실행할 메소드
+    protected void endGame()
     {
         isRunning = false;
     }
 
-    // 초기화
+    /**
+     * 게임이 처음 시작될때 또는 다시 시작할때 한번 실행할 메소드
+     */
     protected abstract void initialize();
-    // 화면 출력
+
+    /**
+     * 사용자에게 화면을 출력하는 메소드
+     */
     protected abstract void render();
-    // 사용자 입력
+
+    /**
+     * 사용자에게 입력을 받는 메소드
+     */
     protected abstract void inputHandle();
-    // 게임 상태 갱신
-    protected abstract  void update();
+
+    /**
+     * 사용자에게 받은 입력으로 게임의 상태를 갱신하는 메소드
+     */
+    protected abstract void update();
 }

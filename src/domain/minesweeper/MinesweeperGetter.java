@@ -1,6 +1,5 @@
 package domain.minesweeper;
 
-import domain.base.GameApp;
 import utility.MenuUtils;
 
 /**
@@ -20,13 +19,13 @@ public class MinesweeperGetter
         return option;
     }
 
-    public static GameApp getLauncher()
+    public static void play()
     {
-        return new MinesweeperLauncher(getOption());
+        new MinesweeperLauncher(getOption()).run();
     }
 
     public static void setOption()
     {
-        MenuUtils.optionRender(getOption(),MinesweeperOptionMenu.values(),"지뢰찾기 옵션");
+        MenuUtils.showOption(getOption(),MinesweeperOptionMenu.values(),"지뢰찾기 옵션");
     }
 }
