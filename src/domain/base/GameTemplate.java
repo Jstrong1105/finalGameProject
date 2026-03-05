@@ -16,8 +16,8 @@ public abstract class GameTemplate implements GameApp
     {
         do
         {
-            initialize();
             isRunning = true;
+            initialize();
 
             // update 에서 내부적으로 게임이 종료되었는지 판단해서
             // endGame을 호출한다.

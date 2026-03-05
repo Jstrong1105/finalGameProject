@@ -31,7 +31,7 @@ class MinesweeperLauncher extends GameTemplate
     private static final int[] chanceArr = {5,4,3};
 
     // 플레이어가 선택한 행 / 열 / 액션
-    private int playerCol,playerRow;
+    private int playerRow,playerCol;
 
     // 첫 입력 여부
     private boolean first;
@@ -56,8 +56,8 @@ class MinesweeperLauncher extends GameTemplate
 
         board = new Board(size,minesCount, printer);
         chanceCount = chanceArr[level -1];
-        playerCol = -1;
         playerRow = -1;
+        playerCol = -1;
         first = true;
         startTime = Instant.now();
     }
@@ -75,25 +75,25 @@ class MinesweeperLauncher extends GameTemplate
     @Override
     protected void inputHandle()
     {
-        playerCol = -1;
         playerRow = -1;
+        playerCol = -1;
 
         while(true)
         {
             int number = printer.inputNumber(size);
 
-            playerCol = number / size;
-            playerRow = number % size;
+            playerRow = number / size;
+            playerCol = number % size;
 
             // 오픈한 칸은 선택할 수 없다.
-            if(board.isOpen(playerCol,playerRow))
+            if(board.isOpen(playerRow,playerCol))
             {
                 InputUtils.readString("이미 오픈한 칸입니다.");
             }
             else
             {
                 // 플레이어가 입력한 칸 선택해주기
-                board.choiceCell(playerCol,playerRow);
+                board.choiceCell(playerRow,playerCol);
 
                 render();
 
@@ -107,7 +107,7 @@ class MinesweeperLauncher extends GameTemplate
     {
         MenuUtils.showOption(this,CellActionMenu.values(),"셀 옵션");
 
-        board.cancelCell(playerCol,playerRow);
+        board.cancelCell(playerRow,playerCol);
 
         if(board.isClear())
         {
@@ -159,30 +159,30 @@ class MinesweeperLauncher extends GameTemplate
         if(first)
         {
             first = false;
-            board.firstInput(playerCol,playerRow);
+            board.firstInput(playerRow,playerCol);
         }
 
         // 깃발이 설치된 칸이라면
-        if(board.isFlag(playerCol,playerRow))
+        if(board.isFlag(playerRow,playerCol))
         {
             InputUtils.readString("깃발은 열 수 없습니다.");
             return;
         }
 
         // 지뢰인 칸이라면
-        else if(board.isMine(playerCol,playerRow))
+        else if(board.isMine(playerRow,playerCol))
         {
             finish(false);
             return;
         }
 
-        board.openCell(playerCol,playerRow);
+        board.openCell(playerRow,playerCol);
     }
 
     // 깃발 액션 수행
     private void flagCell()
     {
-        board.toggleFlag(playerCol,playerRow);
+        board.toggleFlag(playerRow,playerCol);
     }
 
     // 스킬 액션 수행
@@ -195,14 +195,14 @@ class MinesweeperLauncher extends GameTemplate
             chanceCount--;
 
             // 해당 칸의 지뢰 여부를 알려준다.
-            if(board.isMine(playerCol,playerRow))
+            if(board.isMine(playerRow,playerCol))
             {
                 InputUtils.readString("해당 칸은 지뢰입니다.");
 
                 // 해당 칸이 지뢰고 깃발이 아니라면 깃발을 설치한다.
-                if(!board.isFlag(playerCol,playerRow))
+                if(!board.isFlag(playerRow,playerCol))
                 {
-                    board.toggleFlag(playerCol,playerRow);
+                    board.toggleFlag(playerRow,playerCol);
                 }
             }
             else
@@ -211,12 +211,12 @@ class MinesweeperLauncher extends GameTemplate
 
                 // 해당 칸이 지뢰가 아니라면 자동으로 열어준다.
                 // 깃발 상태라면 깃발을 해제하고
-                if(board.isFlag(playerCol,playerRow))
+                if(board.isFlag(playerRow,playerCol))
                 {
-                    board.toggleFlag(playerCol,playerRow);
+                    board.toggleFlag(playerRow,playerCol);
                 }
 
-                board.openCell(playerCol,playerRow);
+                openCell();
             }
         }
         // 찬스의 횟수가 남아 있지 않다면
@@ -240,7 +240,7 @@ class MinesweeperLauncher extends GameTemplate
         }
         else
         {
-            printer.endMsgPrint(playerCol,playerRow,size);
+            printer.endMsgPrint(playerRow,playerCol,size);
         }
         endGame();
     }

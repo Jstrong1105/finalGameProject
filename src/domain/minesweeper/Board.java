@@ -1,7 +1,10 @@
 package domain.minesweeper;
 
+import utility.InputUtils;
+
 import java.util.Arrays;
 import java.util.Random;
+import java.util.Stack;
 import java.util.stream.IntStream;
 
 /**
@@ -10,8 +13,8 @@ import java.util.stream.IntStream;
 class Board
 {
     // 주변 8칸을 탐색할때 사용할 좌표 상수
-    private static final int[] DIRECTION_COL = {-1,-1,-1,0,0,1,1,1};
-    private static final int[] DIRECTION_ROW = {-1,0,1,-1,1,-1,0,1};
+    private static final int[] DIRECTION_ROW = {-1,-1,-1,0,0,1,1,1};
+    private static final int[] DIRECTION_COL = {-1,0,1,-1,1,-1,0,1};
 
     // 보드판
     private Cell[][] board;
@@ -97,55 +100,55 @@ class Board
     }
 
     // 좌표가 보드판 범위를 벗어났는지 확인하는 메소드
-    private boolean isOutOfArray(int col, int row)
+    private boolean isOutOfArray(int row, int col)
     {
-        return col < 0 || row < 0 || col >= size || row >= size;
+        return row < 0 || col < 0 || row >= size || col >= size;
     }
 
     // 보드판의 범위를 벗어난 값을 입력해 에러를 던지는 래퍼 메소드
-    private void arrayOutCheck(int col, int row)
+    private void arrayOutCheck(int row, int col)
     {
-        if(isOutOfArray(col,row))
+        if(isOutOfArray(row,col))
         {
             throw new IllegalArgumentException("보드판의 범위를 벗어난 입력입니다.");
         }
     }
 
     // 한칸 선택하기
-    void choiceCell(int col, int row)
+    void choiceCell(int row, int col)
     {
-        arrayOutCheck(col,row);
+        arrayOutCheck(row,col);
 
         // 이미 열린 셀은 선택할 수 없다.
-        if(!board[col][row].isOpen())
+        if(!board[row][col].isOpen())
         {
-            board[col][row].setChoice(true);
+            board[row][col].setChoice(true);
         }
     }
 
     // 선택 취소하기
-    void cancelCell(int col, int row)
+    void cancelCell(int row, int col)
     {
-        arrayOutCheck(col,row);
+        arrayOutCheck(row,col);
 
-        board[col][row].setChoice(false);
+        board[row][col].setChoice(false);
     }
 
     // 깃발 체크
-    void toggleFlag(int col, int row)
+    void toggleFlag(int row, int col)
     {
-        arrayOutCheck(col,row);
+        arrayOutCheck(row,col);
 
-        board[col][row].flagToggle();
+        board[row][col].flagToggle();
     }
 
     // 첫 입력 체크
-    void firstInput(int col, int row)
+    void firstInput(int row, int col)
     {
-        arrayOutCheck(col,row);
+        arrayOutCheck(row,col);
 
         // 처음 입력한 값이 지뢰라면 다른 곳으로 지뢰를 옮긴다.
-        if(board[col][row].isMine())
+        if(board[row][col].isMine())
         {
             RD.ints(0, totalCell)
                     .distinct()
@@ -153,7 +156,7 @@ class Board
                     .limit(1)
                     .forEach(index->
                     {
-                        board[col][row].setMine(false);
+                        board[row][col].setMine(false);
                         board[index/size][index%size].setMine(true);
                     });
         }
@@ -173,74 +176,106 @@ class Board
     }
 
     // 지뢰 근처 셀에 인접 지뢰 수를 증감시키는 메소드
-    private void setAdjacentMines(int col, int row)
+    private void setAdjacentMines(int row, int col)
     {
         for(int i = 0; i < DIRECTION_COL.length; i++)
         {
-            int nCol = col + DIRECTION_COL[i];
             int nRow = row + DIRECTION_ROW[i];
+            int nCol = col + DIRECTION_COL[i];
 
-            if(!isOutOfArray(nCol,nRow))
+            if(!isOutOfArray(nRow,nCol))
             {
-                board[nCol][nRow].addAdjacentMines();
+                board[nRow][nCol].addAdjacentMines();
             }
         }
     }
 
     // 한칸 열림 여부 확인하기
-    boolean isOpen(int col, int row)
+    boolean isOpen(int row, int col)
     {
-        arrayOutCheck(col,row);
+        arrayOutCheck(row,col);
 
-        return board[col][row].isOpen();
+        return board[row][col].isOpen();
     }
 
     // 한칸 깃발 여부 확인하기
-    boolean isFlag(int col, int row)
+    boolean isFlag(int row, int col)
     {
-        arrayOutCheck(col,row);
+        arrayOutCheck(row,col);
 
-        return board[col][row].isFlagged();
+        return board[row][col].isFlagged();
     }
 
     // 한칸 폭탄 여부 확인하기
-    boolean isMine(int col, int row)
+    boolean isMine(int row, int col)
     {
-        arrayOutCheck(col,row);
+        arrayOutCheck(row,col);
 
-        return board[col][row].isMine();
+        return board[row][col].isMine();
     }
 
     // 한칸 열기
-    void openCell(int col, int row)
+    void openCell(int row, int col)
     {
-        arrayOutCheck(col,row);
+        arrayOutCheck(row,col);
 
-        Cell cell = board[col][row];
+        Cell cell = board[row][col];
 
         if(cell.isClosed())
         {
-            cell.openCell();
-            openCellCount++;
-
             if(cell.getAdjacentMines() == 0)
             {
-                openAdjacentCell(col,row);
+                openAdjacentCell(row,col);
+            }
+            else
+            {
+                cell.openCell();
+                openCellCount++;
             }
         }
     }
 
     // 주변에 지뢰가 없는 칸을 열어서 연쇄적으로 주변 8칸을 열기
-    private void openAdjacentCell(int col,int row)
+    private void openAdjacentCell(int row,int col)
     {
-        for(int i = 0; i < DIRECTION_COL.length; i++)
-        {
-            int nCol = col + DIRECTION_COL[i];
-            int nRow = row + DIRECTION_ROW[i];
+        // 좌표를 저장할 스택
+        Stack<int[]> adjacentCells = new Stack<>();
 
-            if(!isOutOfArray(nCol,nRow))
+        adjacentCells.push(new int[]{row,col});
+
+        // 스택에 값이 존재하는 동안
+        while(!adjacentCells.isEmpty())
+        {
+            // arr 에 스택에 있는 좌표 하나 가져오기
+            int[] arr = adjacentCells.pop();
+
+            // 해당 하는 위치의 셀 가져오기
+            Cell cell = board[arr[0]][arr[1]];
+
+            // 해당 셀이 닫혀 있지 않다면 진행하지 않음
+            if(!cell.isClosed())
             {
-                openCell(nCol,nRow);
+                continue;
+            }
+
+            // 해당 셀을 열고
+            cell.openCell();
+            openCellCount++;
+
+            // 해당 셀의 adjacentMines 가 0이라면
+            // 주변 8칸의 좌표를 stack 에 추가함
+            if(cell.getAdjacentMines() == 0)
+            {
+                for(int i = 0; i < DIRECTION_COL.length; i++)
+                {
+                    int nRow = arr[0] + DIRECTION_ROW[i];
+                    int nCol = arr[1] + DIRECTION_COL[i];
+
+                    if(!isOutOfArray(nRow,nCol)&&board[nRow][nCol].isClosed())
+                    {
+                        adjacentCells.push(new int[]{nRow,nCol});
+                    }
+                }
             }
         }
     }
@@ -253,8 +288,11 @@ class Board
                 .flatMap(Arrays::stream)
                 .allMatch(cell->!cell.isMine() || cell.isOpen());
          */
-        // 위의 방식은 보드판 전체를 돌면서 확인하는 구조 직관적이라곤 할 수 있겠지만
+        // 위의 방식은 보드판 전체를 돌면서 확인하는 구조
+        // 직관적이라곤 할 수 있겠지만
         // 조금 자원 소모가 큰거 같다.
+
+        // 한칸 열때마다 openCellCount를 1씩 증가시켜서 그게 전체 셀에서 지뢰 셀을 뺀 수와 같은 지 체크한다.
 
         return openCellCount >= totalCell - mineCount;
     }

@@ -33,7 +33,7 @@ public final class InputUtils
 
             if(str.equalsIgnoreCase("exit"))
             {
-                System.out.println("프로그램을 종료합니다.");
+                System.out.println("프로그램을 강제 종료합니다. 강제 종료 시 저장이 되지 않을 수 있습니다.");
                 System.exit(0);
                 return "";
             }
